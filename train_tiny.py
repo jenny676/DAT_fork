@@ -454,7 +454,7 @@ def adv_train(model,c_criterion,class_center,train_loader, optimizer, a_G, optim
 
 
 def clamp(X, lower_limit, upper_limit):
-    return torch.max(torch.min(X, upper_limit), lower_limit)
+    return torch.clamp(X, min=lower_limit, max=upper_limit)
 
 
 upper_limit, lower_limit = 1, 0
@@ -651,4 +651,5 @@ def main():
         
 if __name__ == '__main__':
     main()
+
 
