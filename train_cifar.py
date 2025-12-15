@@ -467,10 +467,10 @@ upper_limit, lower_limit = 1, 0
 def attack_pgd(model, X, y, epsilon, alpha, attack_iters, restarts,
                norm, soft_label=None, epoch=0, early_stop=False,
                mixup=False, y_a=None, y_b=None, lam=None):
-    max_loss = torch.zeros(y.shape[0]).cuda()
-    max_delta = torch.zeros_like(X).cuda()
+    max_loss = torch.zeros(y.shape[0], device=device)
+    max_delta = torch.zeros_like(X, device=device)
     for _ in range(restarts):
-        delta = torch.zeros_like(X).cuda()
+        delta = torch.zeros_like(X, device=device)
         if norm == "l_inf":
             delta.uniform_(-epsilon, epsilon)
         elif norm == "l_2":
@@ -643,4 +643,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
