@@ -126,11 +126,19 @@ else:
 model_dir = args.model_dir + '_' + str(args.gpu_id) + '_' + str(args.mix_num)
 if not os.path.exists(model_dir):
     os.makedirs(model_dir)
-use_cuda = not args.no_cuda and torch.cuda.is_available()
+# ===== Device / CUDA-safe setup =====
+use_cuda = (not args.no_cuda) and torch.cuda.is_available()
 torch.manual_seed(args.seed)
-device = torch.device('cuda:' + str(args.gpu_id) if torch.cuda.is_available() else 'cpu')
-torch.cuda.set_device(args.gpu_id)
+
+if use_cuda:
+    device = torch.device(f'cuda:{args.gpu_id}')
+    # Only call set_device when CUDA is actually available and not disabled by --no-cuda
+    torch.cuda.set_device(args.gpu_id)
+else:
+    device = torch.device('cpu')
+
 kwargs = {'num_workers': 2, 'pin_memory': True} if use_cuda else {}
+
 
 
 class Get_Dataset_C10(torchvision.datasets.CIFAR10):
@@ -636,6 +644,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
