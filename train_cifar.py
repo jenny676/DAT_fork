@@ -182,17 +182,32 @@ valset = getattr(datasets, args.data)(root=args.data_path, train=True, download=
 train_size = 49000
 valid_size = 1000
 test_size  = 10000
-train_indices = list(range(50000))
+train_indices = list(range(len(trainset)))
 val_indices = []
-count = np.zeros(100)
+# support both CIFAR-10 (10 classes) and CIFAR-100 (100 classes)
+num_classes = NUM_CLASSES
+count = np.zeros(num_classes, dtype=int)
+
 for index in range(len(trainset)):
-    _,_,_, target = trainset[index]
-    if(np.all(count==10)):
+    sample = trainset[index]
+    # sample can be (img, target) or (img, img_o, target) or (a,b,c,target)
+    if isinstance(sample, (tuple, list)):
+        target = sample[-1]
+    else:
+        # unexpected return format
+        raise ValueError(f"Unexpected dataset __getitem__ return type at index {index}: {type(sample)}")
+
+    # stop when we've collected 10 per class (adjust this if you intended a different number)
+    if np.all(count == 10):
         break
-    if(count[target]<10):
+
+    if count[target] < 10:
         count[target] += 1
         val_indices.append(index)
-        train_indices.remove(index)
+        # remove only if index still present (safe)
+        if index in train_indices:
+            train_indices.remove(index)
+
 
 train_loader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, **kwargs)
 val_loader = torch.utils.data.DataLoader(valset, batch_size=args.batch_size,sampler=SubsetRandomSampler(val_indices), **kwargs)
@@ -644,6 +659,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
 
 
 
